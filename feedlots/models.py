@@ -2,31 +2,31 @@ from django.db import models
 
 
 class Lote(models.Model):
-    numero_lote = models.IntegerField()
+    numero = models.IntegerField()
 
     def __str__(self):
-        return self.numero_lote
+        return f'id {self.pk} - lote {self.numero}'
 
 
 class Corral(models.Model):
-    numero_corral = models.PositiveIntegerField()
+    numero = models.PositiveIntegerField(unique=True)
 
     def __str__(self):
-        return self.numero_corral
+        return f'id {self.pk} - corral {self.numero}'
 
 
 class Tropa(models.Model):
-    numero_tropa = models.IntegerField()
+    numero = models.IntegerField()
     lote = models.ForeignKey("Lote", on_delete=models.CASCADE)
-    corral = models.ForeignKey(
+    corral = models.OneToOneField(
         "Corral", null=True, blank=True, on_delete=models.SET_NULL
     )
 
     def validate_unique(self, *args, **kwargs):
         super().validate_unique(*args, **kwargs)
         if self.__class__.objects.filter(
-            numero_tropa=self.numero_tropa,
-            lote__numero_lote=self.lote.numero_lote,
+            numero_tropa=self.numero,
+            lote__numero_lote=self.lote.numero,
         ).exists():
             raise ValidationError(
                 message="Tropa con (numero_tropa, numero_lote) ya existe.",
@@ -34,7 +34,7 @@ class Tropa(models.Model):
             )
 
     def __str__(self):
-        return f'Tropa {self.numero_tropa} - Lote {self.lote.numero_lote}'
+        return f'Tropa {self.numero} - Lote {self.lote.numero}'
 
 
 class Animal(models.Model):
@@ -43,4 +43,4 @@ class Animal(models.Model):
     tropa = models.ForeignKey("Tropa", on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Animal {self.pk} - Tropa {self.tropa.numero_tropa}'
+        return f'Animal {self.pk} - Tropa {self.tropa.numero}'
