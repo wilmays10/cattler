@@ -10,6 +10,12 @@ class Lote(models.Model):
 
 class Corral(models.Model):
     numero = models.PositiveIntegerField(unique=True)
+    tropa = models.OneToOneField(
+        "Tropa", null=True, blank=True, on_delete=models.SET_NULL
+    )
+
+    def es_vacio(self):
+        return not isinstance(self.tropa, Tropa)
 
     def __str__(self):
         return f'id {self.pk} - corral {self.numero}'
@@ -18,12 +24,10 @@ class Corral(models.Model):
 class Tropa(models.Model):
     numero = models.IntegerField()
     lote = models.ForeignKey("Lote", on_delete=models.CASCADE)
-    corral = models.OneToOneField(
-        "Corral", null=True, blank=True, on_delete=models.SET_NULL
-    )
 
     def validate_unique(self, *args, **kwargs):
-        super().validate_unique(*args, **kwargs)
+        super(Tropa, self).validate_unique(*args, **kwargs)
+        print("chequeando")
         if self.__class__.objects.filter(
             numero_tropa=self.numero,
             lote__numero_lote=self.lote.numero,
@@ -32,6 +36,7 @@ class Tropa(models.Model):
                 message="Tropa con (numero_tropa, numero_lote) ya existe.",
                 code="unique_together",
             )
+
 
     def __str__(self):
         return f'Tropa {self.numero} - Lote {self.lote.numero}'

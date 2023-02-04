@@ -6,6 +6,7 @@ from feedlots.api.views import (
     TropaViewSet,
     CorralViewSet,
     LoteViewSet,
+    registro
 )
 
 
@@ -17,4 +18,5 @@ router.register("lotes", LoteViewSet, basename="animal.api.lotes")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("registro", registro, name="registro")
 ]

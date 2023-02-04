@@ -25,3 +25,12 @@ class LoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lote
         fields = "__all__"
+
+
+class IngresoSerializer(serializers.Serializer):
+    corral = serializers.IntegerField()
+    cantidad = serializers.IntegerField()
+
+class RegistroSerializer(serializers.Serializer):
+    lote = serializers.IntegerField()
+    ingresos = IngresoSerializer(many=True)
