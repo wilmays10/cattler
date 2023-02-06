@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -27,16 +28,18 @@ class Tropa(models.Model):
 
     def validate_unique(self, *args, **kwargs):
         super(Tropa, self).validate_unique(*args, **kwargs)
-        print("chequeando")
         if self.__class__.objects.filter(
-            numero_tropa=self.numero,
-            lote__numero_lote=self.lote.numero,
+            numero=self.numero,
+            lote__numero=self.lote.numero,
         ).exists():
             raise ValidationError(
-                message="Tropa con (numero_tropa, numero_lote) ya existe.",
+                message=f"{self.numero} como numero de tropa ya existe en el lote {self.lote.numero}.",
                 code="unique_together",
             )
 
+    def save(self, *args, **kwargs):
+        self.validate_unique()
+        super(Tropa, self).save(*args, **kwargs)
 
     def __str__(self):
         return f'Tropa {self.numero} - Lote {self.lote.numero}'

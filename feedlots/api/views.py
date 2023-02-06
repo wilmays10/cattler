@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
@@ -57,11 +58,17 @@ class LoteViewSet(viewsets.ModelViewSet):
     serializer_class = LoteSerializer
     queryset = Lote.objects.all()
 
-
+@transaction.atomic(durable=True)
 @api_view(['POST'])
 def registro(request):
+    """
+    Servicio de ingreso de animales. El lote ya debe existir en la base de datos.
+    El corral al cuál se ingresan los animales debe existir y estar vacío.
+    :return: response(msg, status)
+    """
     serializer = RegistroSerializer(data=request.data)
-    message = ""
+    message = "Datos cargados correctamente. "
+    status_num = status.HTTP_201_CREATED
     if serializer.is_valid():
         try:
             num_lote = serializer.validated_data['lote']
@@ -69,7 +76,7 @@ def registro(request):
 
         except ObjectDoesNotExist:
             return Response({"message": f'Lote numero {num_lote} inexistente.'},
-                            status=status.HTTP_404_NOT_FOUND)
+                            status=status.HTTP_400_BAD_REQUEST)
 
         ingresos = serializer.validated_data['ingresos']
         try:
@@ -83,15 +90,15 @@ def registro(request):
                     for i in range(ingreso['cantidad']):
                         animal = Animal.objects.create(tropa=tropa)
                 else:
-                    message += f"Corral {num_corral} no vacío. No se cargaron sus datos. "
+                    message = f"Corral {num_corral} no vacío. No se cargaron sus datos. "
+                    status_num = status.HTTP_200_OK
 
         except ObjectDoesNotExist:
-            return Response({"message": f"Corral numero {num_corral} inexistente."})
+            message = f"Corral numero {num_corral} inexistente."
+            status_num = status.HTTP_200_OK
 
     else:
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+        message = serializer.errors
+        status_num = status.HTTP_400_BAD_REQUEST
 
-    if not message:
-        message = "Datos cargados correctamente."
-    return Response({"message": message})
+    return Response({"message": message}, status_num)
