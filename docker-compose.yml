@@ -1,0 +1,16 @@
+version: "3.7"
+
+volumes:
+  db-data:
+
+services:
+  back:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: cattler-back
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+      - .db_data/db.sqlite3:/db.sqlite3
