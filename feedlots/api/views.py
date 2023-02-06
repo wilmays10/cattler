@@ -58,7 +58,7 @@ class LoteViewSet(viewsets.ModelViewSet):
     serializer_class = LoteSerializer
     queryset = Lote.objects.all()
 
-@transaction.atomic(durable=True)
+
 @api_view(['POST'])
 def registro(request):
     """
