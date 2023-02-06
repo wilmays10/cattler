@@ -13,8 +13,5 @@ pip3 install -r requirements.txt
 python manage.py makemigrations
 python manage.py migrate
 
-# Carga de datos de ejemplo
-#python manage.py loaddata init_data/db.json
-
 # Inicializar server local
 python manage.py runserver
